@@ -1,0 +1,12 @@
+{
+    "common": {
+        "labelQuestions":"Questions",
+        "btnSubmit":"Submit",
+        "Reset":"Reset",
+        "characterRemaining:":"Character remaining:"
+    },
+    "msg": {
+        "thankYouFeedback" : "Thank you for your valuable feedback",
+        "commentQuestion":"This question is not answered"
+    }
+}
