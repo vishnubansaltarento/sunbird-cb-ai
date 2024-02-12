@@ -8,7 +8,7 @@
 
 
 from flask import Flask, request, jsonify
-from pymilvus import Collection, DataType, FieldSchema, CollectionSchema, connections
+from pymilvus import Collection, DataType, FieldSchema, CollectionSchema, connections,utility
 from sentence_transformers import SentenceTransformer
 import torch
 import os
