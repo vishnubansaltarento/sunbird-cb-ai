@@ -1,4 +1,5 @@
 {
+  "Mobile:":{
   "newKeys": {
     "learnerLeaderboard": "Learner Leaderboard",
     "whatLearnerLeader": "What is a Learner Leaderboard?",
@@ -46,5 +47,5 @@
     "submitQuiz": "Submit",
     "passMdg4": "Well done, keep learning!",
     "rateThis": ", rate this content!"
-  }
+  }}
 }
