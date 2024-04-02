@@ -6,6 +6,7 @@ from concurrent.futures import ThreadPoolExecutor
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from config import active_api, userID, ulcaApiKey, key_location, repo_url, sheet_name, sheet_id, folder_path
+import time
 
 # Function to fetch JSON files from GitHub
 def fetch_github_json_names():
@@ -76,17 +77,18 @@ def update_google_sheet(merged_df):
 
 
 # Function to create DataFrame from JSON files
+
+
 def create_dataframe_from_json(file_name, data):
     dfs = []  
-    try:
-        dict_json = {f"{file_name[0]}.{k}.{key}": string for k, v in data.items() for key, string in v.items()}
-    except:
-        print("json is having only one dict")
-        dict_json = {f"{file_name[0]}.{k}": v for k, v in data.items()}  # for only one dict in json
+    
+    dict_json = {f"{file_name[0]}.{k}.{key}": string for k, v in data.items() for key, string in v.items()}
+    
 
     df = pd.DataFrame.from_dict(dict_json, orient='index').reset_index()
     df.rename(columns={"index": "languagekey", 0: "en_value (current)"}, inplace=True)
     dfs.append(df)
+    print(df)
     
     result_df = pd.concat(dfs, ignore_index=True)
     result_df = result_df.groupby('en_value (current)').first()
@@ -175,25 +177,23 @@ def bhashini_api_call(task, target_lang, active_api, string):
         'Authorization': '9uAUqhCxaept0FGxeOUkyJ1XQSZtp9GWHy5XLriwyBsS-sovl9RkTe2Gkthwrx2F',
         'Content-Type': 'application/json'
     }
-
+    time.sleep(5)
     response = requests.post(url, headers=headers, data=payload)
+    
     translation_json = response.text
     print("||||||||||||||||||||||||||||||||||||||||||||||||| translated json")
     print(translation_json)
+    # time.sleep(2)
     translated_data = json.loads(translation_json)
 
     if task == "translation":
-        try:
-            return translated_data['pipelineResponse'][0]['output'][0]['target']
-        except KeyError as e:
-            print(f"KeyError: {e}")
-            return "Translation not available"
+        
+        return translated_data['pipelineResponse'][0]['output'][0]['target']
+        
     else:
-        try:
-            return translated_data['pipelineResponse'][0]['output'][0]['target'][0]
-        except KeyError as e:
-            print(f"KeyError: {e}")
-            return "Output not available"
+        
+        return translated_data['pipelineResponse'][0]['output'][0]['target'][0]
+        
 
 # Function to process a single row for API calls
 def process_row(row, task, target_lang):
@@ -223,7 +223,7 @@ def get_api(data):
 
 def create_Json(u_in, dataframe, file, file_n):
     df=dataframe
-    print(file)
+    
     final_dict={}
     l1=[]      
             
@@ -248,17 +248,22 @@ def create_Json(u_in, dataframe, file, file_n):
                 print(f"no value found for {tag} : {value}")
         final_dict[k]=temp_dict 
         
-            
+        print("****************************")    
+        print(file_n)
+        try:
 
-        if file.startswith("mobile"):
+            if file_n.startswith("mobile"):
 
+                with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
+                    json.dump(final_dict["mobile"], json_file, indent=2, ensure_ascii=False)
+
+            else:
+
+                with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
+                    json.dump(final_dict, json_file, indent=2, ensure_ascii=False)
+        except:
             with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
-                json.dump(final_dict["mobile"], json_file, indent=2, ensure_ascii=False)
-
-        else:
-
-            with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
-                json.dump(final_dict, json_file, indent=2, ensure_ascii=False)
+                    json.dump(final_dict, json_file, indent=2, ensure_ascii=False)
     print(f"there are {len(set(l1))} unique labels added from {file_n}") 
     
     return None

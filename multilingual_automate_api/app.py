@@ -6,7 +6,7 @@ from config import languages
 
 app = Flask(__name__)
 
-global refined_df
+global refined_df, file
 
 @app.route('/process_data', methods=['POST'])
 
@@ -28,18 +28,22 @@ def process_data_route():
             print("@@@@@@@@@@@@@@@@@@@@@@@@")
             print(df)
             refined_df = result_df[~result_df["en_value (current)"].isin(df["en_value (current)"])]
+            print(refined_df)
             ##
-            if not refined_df.empty:
-                
-           
+            if not refined_df.empty:       
+                          
                 for lang in languages:
-                    refined_df[f"{lang}_translated"] = parallel_api_calls(refined_df, "translation", f"{lang}", max_workers=10)         ##max_threads
-                    time.sleep(5)
-                    refined_df[f"{lang}_transliterated"] = parallel_api_calls(refined_df, "transliteration", f"{lang}", max_workers=10)
-                    # time.sleep(5) 
-                    refined_df[f"{lang}_curated"]=refined_df.fillna('')       ###np.nan not valid in google spread
+                    # time.sleep(30)
+                    refined_df[f"{lang}_translated"] = parallel_api_calls(refined_df, "translation", f"{lang}", max_workers=128)         ##max_threads
+                    time.sleep(2)
+                    refined_df[f"{lang}_transliterated"] = parallel_api_calls(refined_df, "transliteration", f"{lang}", max_workers=128)
+                    # time.sleep(2) 
+                    # refined_df[f"{lang}_curated"]=refined_df.fillna('')       ###np.nan not valid in google spread
+                    refined_df[f"{lang}_value(curated)"]=""
+
                 refined_df.reset_index(inplace=True, drop=True)
                 merged_df = merge_labels_for_approval(df, refined_df)
+                # merged_df=merged_df.groupby("en_value (current)").first()
                 print("/////////////////////////////////")
                 print(merged_df)
                 merged_df.to_excel("previously updated_df.xlsx")
@@ -48,7 +52,9 @@ def process_data_route():
                 print("no new data")
 
             for language in languages:
-
+                print(file)
+                print("****************************")    
+                print(file)
                 create_Json(language, merged_df, current_json, file)
             
         else:
