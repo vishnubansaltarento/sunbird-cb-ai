@@ -5,7 +5,7 @@ import pandas as pd
 from concurrent.futures import ThreadPoolExecutor
 import gspread
 from oauth2client.service_account import ServiceAccountCredentials
-from config import active_api, userID, ulcaApiKey, key_location, repo_url, sheet_name, sheet_id, folder_path
+from config import active_api, userID, ulcaApiKey, key_location, repo_url, sheet_name, sheet_id, folder_path, output_json_path
 import time
 
 # Function to fetch JSON files from GitHub
@@ -46,6 +46,15 @@ def fetch_github_json(file):
         return None
 
 # Function to fetch data from Google Sheets
+# def read_google_sheet():
+#     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
+#     creds = ServiceAccountCredentials.from_json_keyfile_name(key_location, scope)
+#     client = gspread.authorize(creds)
+
+#     sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
+#     data = sheet.get_all_records()
+#     df = pd.DataFrame(data)
+#     return df
 def read_google_sheet():
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
     creds = ServiceAccountCredentials.from_json_keyfile_name(key_location, scope)
@@ -53,8 +62,18 @@ def read_google_sheet():
 
     sheet = client.open_by_key(sheet_id).worksheet(sheet_name)
     data = sheet.get_all_records()
-    df = pd.DataFrame(data)
+
+    # Ensure that "en_value (current)" column is included
+    column_names = ["Column1", "languagekey", "en_value (current)", "hi_translated", "hi_transliterated", "hi_value(curated)",
+                    "ta_translated", "ta_transliterated", "ta_value(curated)", "te_translated", "te_transliterated", "te_value(curated)",
+                    "as_translated", "as_transliterated", "as_value(curated)", "bn_translated", "bn_transliterated", "bn_value(curated)",
+                    "gu_translated", "gu_transliterated", "gu_value(curated)", "kn_translated", "kn_transliterated", "kn_value(curated)",
+                    "ml_translated", "ml_transliterated", "ml_value(curated)", "mr_translated", "mr_transliterated", "mr_value(curated)",
+                    "or_translated", "or_transliterated", "or_value(curated)", "pa_translated", "pa_transliterated", "pa_value(curated)"]
+
+    df = pd.DataFrame(data, columns=column_names)
     return df
+
 
 def update_google_sheet(merged_df):
     scope = ["https://spreadsheets.google.com/feeds", "https://www.googleapis.com/auth/drive"]
@@ -82,7 +101,7 @@ def update_google_sheet(merged_df):
 def create_dataframe_from_json(file_name, data):
     dfs = []  
     
-    dict_json = {f"{file_name[0]}.{k}.{key}": string for k, v in data.items() for key, string in v.items()}
+    dict_json = {f"{file_name}.{k}.{key}": string for k, v in data.items() for key, string in v.items()}
     
 
     df = pd.DataFrame.from_dict(dict_json, orient='index').reset_index()
@@ -211,8 +230,18 @@ def parallel_api_calls(df, task, target_lang, max_workers=5):
 
 # Function to merge approved and new labels for approval
 def merge_labels_for_approval(approved_df, new_df):
-    added_new_labels = pd.concat([approved_df, new_df])
-    added_new_labels.reset_index(inplace=True, drop=True)
+    # added_new_labels = pd.concat([approved_df, new_df])
+    # Reorder columns of new_df to match the sequence of columns in approved_df
+    new_df_reordered = new_df.reindex(columns=approved_df.columns)
+
+    # Concatenate the DataFrames
+    # added_new_labels = pd.concat([approved_df, new_df_reordered])
+    # Concatenate new_df_reordered below the last record of approved_df
+    # added_new_labels = approved_df.append(new_df_reordered, ignore_index=True)
+    added_new_labels = pd.concat([approved_df, new_df_reordered], ignore_index=True)
+    print(added_new_labels)
+    print(type(added_new_labels))
+    # added_new_labels.reset_index(inplace=True, drop=True)
     return added_new_labels
 
 # Function to get active API
@@ -222,29 +251,31 @@ def get_api(data):
     return {"active_api": api}
 
 def create_Json(u_in, dataframe, file, file_n):
-    df=dataframe
     
-    final_dict={}
-    l1=[]      
-            
-    for k,v in file.items():
-        temp_dict={}
+    df2 = dataframe
+    final_dict = {}
+    l1 = []
+
+    for k, v in file.items():
+        temp_dict = {}
 
         for tag, value in v.items():
-
+            # print(df2)
+            # break
             try:
-                if value in df[f"{u_in}_value(curated)"].values:
-                    value_df=df[f"{u_in}_value(curated)"][df["en_value (current)"]==value].values[0]
-                elif value in df["en_value (current)"].values:
-                    value_df=df[f"{u_in}_translated"][df["en_value (current)"]==value].values[0]
-                elif value=="NA":
-                    value_df="NA"
+                if value in df2[f"{u_in}_value(curated)"].values:
+                    value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]
+                elif value in df2["en_value (current)"].values:
+                    value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]
+                elif value == "NA":
+                    value_df = "NA"
                 else:
                     l1.append(value)
-                temp_dict[tag]=value_df
-
-            except:                   
-                print("in except block")
+                    # Assuming you want to continue even if no value is found
+                    continue
+                temp_dict[tag] = value_df
+            except Exception as e:
+                print(f"Error occurred: {e}")
                 print(f"no value found for {tag} : {value}")
         final_dict[k]=temp_dict 
         
@@ -254,15 +285,15 @@ def create_Json(u_in, dataframe, file, file_n):
 
             if file_n.startswith("mobile"):
 
-                with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
+                with open(f"{output_json_path}/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
                     json.dump(final_dict["mobile"], json_file, indent=2, ensure_ascii=False)
 
             else:
 
-                with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
+                with open(f"{output_json_path}/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
                     json.dump(final_dict, json_file, indent=2, ensure_ascii=False)
         except:
-            with open(f"temp_output/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
+            with open(f"{output_json_path}/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
                     json.dump(final_dict, json_file, indent=2, ensure_ascii=False)
     print(f"there are {len(set(l1))} unique labels added from {file_n}") 
     
