@@ -1,15 +1,12 @@
-from flask import Flask, request, jsonify
+# from flask import Flask, request, jsonify
 import numpy as np
 import time
 from functions import *
 from config import languages
 
-app = Flask(__name__)
+
 
 global refined_df, file
-
-@app.route('/process_data', methods=['POST'])
-
 
 def process_data_route():
     json_files=fetch_github_json_names()
@@ -70,6 +67,6 @@ def process_data_route():
         refined_df=[]
 
     return "Process completed"
-
-if __name__ == '__main__':
-    app.run(debug=True)
+process_data_route()
+# if __name__ == '__main__':
+#     app.run(debug=True, port=9814)
