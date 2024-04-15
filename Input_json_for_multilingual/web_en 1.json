@@ -1924,5 +1924,35 @@
         "competenciesDesc": "Add your competencies, see what others are adding.",
         "eventsDesc": "Add your events."
     },
+    "careerPage":{
+        "title":"Career",
+        "paraText1":"Karmayogi Bharat is a transformative initiative aimed at redefining Public service and governance in India. It represents a significant shift in India's approach to public service and governance, transitioning from a traditional rule-based framework to a dynamic role-based model. It is a digital-first, blended platform designed to empower Government officers with the knowledge, skills, and mindset required for of the 21st century, thus enhancing their ability to serve the nation effectively and efficiently.",
+        "paraText2":"Joining Karmayogi Bharat isn't just about a career move; it's about becoming a part of a Larger mission to build a stronger, more vibrant India - a Viksit Bharat. At Karmayogi Bharat, you will become a catalyst for change. You will harness the power of technology, innovation, and great content to create a dynamic, proactive and people-centric administration.",
+        "positionsText":"Positions",
+        "jobTitletext":"Job Title",
+        "departmentText":"Department",
+        "positionText":"Position",
+        "resetText":"Reset",
+        "searchText":"Search"
+    },
+    "contactUs":{
+        "titleText1":"Contact Us",
+        "titletext2":"Our Office",
+        "fieldtext1":"Name",
+        "fieldtext2":"Email",
+        "fieldtext3":"Mobile Number",
+        "fieldtext4":"Feedback",
+        "fieldtext5":"Enter Capcha",
+        "fieldtext6":"Capcha Code",
+        "fieldtext7":"Submit",
+        "headtext":"Headquarter",
+        "addressText":"Parsvnath Capital Tower 7th Floor, Bhai Vir Singh Marg, Sector 4, Gole Market, New Delhi, Delhi 110001",
+        "mail":"support.karmayogi@gov.in",
+        "numtext":"9876543210",
+        "mailtext":"Mail",
+        "numbertext":"Number"
+    },
     "mobileApp": {}
+    
+
 }
