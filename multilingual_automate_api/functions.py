@@ -261,14 +261,30 @@ def create_Json(u_in, dataframe, file, file_n):
         temp_dict = {}
 
         for tag, value in v.items():
+            # global value_df
             # print(df2)
             # break
+            # value_df=None
             try:
+                # if value in df2["en_value (current)"].values:
+                #     if df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0] is np.nan:
+                #         value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]                
+                #     else:
+                #         value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]
+                
+                    
                 if value in df2["en_value (current)"].values:
-                    if df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0] is not np.nan:
-                        value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]        
+                    if len(df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0])==0 :
+                        value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]                
                     else:
-                        value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]
+                        value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]
+                        
+
+                
+
+
+                
+                
                 elif value == "NA":
                     value_df = "NA"
                 else:
