@@ -7,6 +7,7 @@ import gspread
 from oauth2client.service_account import ServiceAccountCredentials
 from config import active_api, userID, ulcaApiKey, key_location, repo_url, sheet_name, sheet_id, folder_path, output_json_path
 import time
+import numpy as np
 
 # Function to fetch JSON files from GitHub
 def fetch_github_json_names():
@@ -263,10 +264,11 @@ def create_Json(u_in, dataframe, file, file_n):
             # print(df2)
             # break
             try:
-                if value in df2[f"{u_in}_value(curated)"].values:
-                    value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]
-                elif value in df2["en_value (current)"].values:
-                    value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]
+                if value in df2["en_value (current)"].values:
+                    if df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0] is not np.nan:
+                        value_df = df2[f"{u_in}_value(curated)"][df2["en_value (current)"] == value].values[0]        
+                    else:
+                        value_df = df2[f"{u_in}_translated"][df2["en_value (current)"] == value].values[0]
                 elif value == "NA":
                     value_df = "NA"
                 else:
@@ -286,7 +288,7 @@ def create_Json(u_in, dataframe, file, file_n):
             if file_n.startswith("mobile"):
 
                 with open(f"{output_json_path}/{file_n}_translated_output_{u_in}", 'w', encoding='utf-8') as json_file:
-                    json.dump(final_dict["mobile"], json_file, indent=2, ensure_ascii=False)
+                    json.dump(final_dict["mobileApp"], json_file, indent=2, ensure_ascii=False)
 
             else:
 
@@ -298,4 +300,3 @@ def create_Json(u_in, dataframe, file, file_n):
     print(f"there are {len(set(l1))} unique labels added from {file_n}") 
     
     return None
-
